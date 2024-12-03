@@ -1,0 +1,8 @@
+void automation.createSectionUniqueId(Int recordID)
+{
+record = zoho.crm.getRecordById("Sections",recordID);
+fullName = record.get("Full_Name");
+mp = Map();
+mp.put("Course_Unique_ID",record.get("Full_Name"));
+zoho.crm.updateRecord("Sections",recordID,mp);
+}
