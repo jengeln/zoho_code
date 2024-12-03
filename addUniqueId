@@ -1,0 +1,91 @@
+string button.addUniqueId(string recordID)
+{
+    // Initialize an empty list to store individual record IDs
+    recordList = list();
+
+    // Base case: If the recordID is empty, return the empty list
+    if(recordID == "")
+    {
+        return recordList;
+    }
+
+    // Find the index of the first comma
+    index_comma = recordID.indexOf(",");
+
+    // Find the index of the first triple pipe
+    index_pipes = recordID.indexOf("|||");
+
+    // Initialize variables to store the earliest delimiter and its position
+    earliestDelimiter = "";
+    earliestIndex = -1;
+
+    // Determine which delimiter comes first
+    if(index_comma != -1 && (index_pipes == -1 || index_comma < index_pipes))
+    {
+        earliestDelimiter = ",";
+        earliestIndex = index_comma;
+    }
+    else if(index_pipes != -1 && (index_comma == -1 || index_pipes < index_comma))
+    {
+        earliestDelimiter = "|||";
+        earliestIndex = index_pipes;
+    }
+
+    // If a delimiter is found
+    if(earliestDelimiter != "")
+    {
+        if(earliestDelimiter == ",")
+        {
+            // Extract the substring before the comma
+            record = recordID.subString(0, earliestIndex);
+            
+            // Add the extracted record to the list
+            recordList.add(record);
+            
+            // Update the remaining string by removing the extracted part and the comma
+            remaining = recordID.subString(earliestIndex + 1, recordID.length());
+        }
+        else if(earliestDelimiter == "|||")
+        {
+            // Extract the substring before the triple pipe
+            record = recordID.subString(0, earliestIndex);
+            
+            // Add the extracted record to the list
+            recordList.add(record);
+            
+            // Update the remaining string by removing the extracted part and the triple pipe
+            remaining = recordID.subString(earliestIndex + 3, recordID.length());
+        }
+
+        // Recursive call to process the remaining string
+        remainingList = button.addUniqueId(remaining);
+        
+        // Add all records from the recursive call to the main list
+        recordList.addAll(remainingList);
+    }
+    else
+    {
+        // If no delimiter is found, add the entire string as a single record
+        recordList.add(recordID);
+    }
+
+    // Iterate through each entry in the recordList
+    for each entry in recordList
+    {
+        record = zoho.crm.getRecordById("Sections", entry);
+        if(record != null)
+        {
+            fullName = record.get("Full_Name");
+            mp = map();
+            mp.put("Course_Unique_ID", fullName);
+                
+            // Update the record with the new value
+            updateResponse = zoho.crm.updateRecord("Sections", entry, mp);
+                
+            // Optional: Log response for debugging purposes
+            info updateResponse;
+        }
+    }
+
+    return recordList;
+}
